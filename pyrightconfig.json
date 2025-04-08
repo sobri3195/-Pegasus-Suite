@@ -1,0 +1,14 @@
+{
+  "typeCheckingMode": "basic",
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false,
+  "reportAssignmentType": "none",
+  "reportAttributeAccessIssue": "none",
+  "reportCallIssue": "warning",
+  "reportUndefinedVariable": "warning",
+  "reportRedeclaration": "warning",
+  "pythonVersion": "3.9",
+  "extraPaths": ["."],
+  "stubPath": ".",
+  "useLibraryCodeForTypes": true
+} 
