@@ -12,6 +12,15 @@ import platform
 import subprocess
 import math
 
+
+def prompt_user(prompt, on_interrupt=None):
+    """Read user input safely and handle non-interactive execution environments."""
+    try:
+        return input(prompt)
+    except (EOFError, KeyboardInterrupt):
+        print("\n[!] Input interrupted. Returning to menu.")
+        return on_interrupt
+
 class ReverseEngineeringTools:
     """Reverse engineering tools for binary analysis"""
     
@@ -24,7 +33,7 @@ class ReverseEngineeringTools:
         """Basic binary file analysis"""
         print("[+] Binary Analysis Tool")
         
-        binary_path = input("Enter path to binary file: ")
+        binary_path = prompt_user("Enter path to binary file: ", on_interrupt="")
         if not binary_path or not os.path.exists(binary_path):
             print("[!] Invalid file path or file does not exist.")
             return
@@ -80,7 +89,7 @@ class ReverseEngineeringTools:
         except:
             print("[!] Unable to extract strings. Try installing 'strings' utility.")
         
-        input("\nPress Enter to continue...")
+        prompt_user("\nPress Enter to continue...", on_interrupt="")
     
     def disassembler(self):
         """Simple disassembler functionality"""
@@ -89,10 +98,10 @@ class ReverseEngineeringTools:
         if not self.is_linux:
             print("[!] This functionality is currently only available on Linux systems.")
             print("[!] Consider using tools like Ghidra, IDA Pro, or Radare2 for disassembly.")
-            input("\nPress Enter to continue...")
+            prompt_user("\nPress Enter to continue...", on_interrupt="")
             return
             
-        binary_path = input("Enter path to binary file: ")
+        binary_path = prompt_user("Enter path to binary file: ", on_interrupt="")
         if not binary_path or not os.path.exists(binary_path):
             print("[!] Invalid file path or file does not exist.")
             return
@@ -102,7 +111,7 @@ class ReverseEngineeringTools:
             subprocess.check_output(["which", "objdump"])
         except:
             print("[!] objdump not found. Please install binutils package.")
-            input("\nPress Enter to continue...")
+            prompt_user("\nPress Enter to continue...", on_interrupt="")
             return
         
         print(f"[*] Disassembling binary: {binary_path}")
@@ -118,7 +127,7 @@ class ReverseEngineeringTools:
             print(result)
             
             # Ask user if they want to see the full disassembly (it could be large)
-            show_full = input("Show full disassembly? This might be large (y/n): ").lower() == 'y'
+            show_full = (prompt_user("Show full disassembly? This might be large (y/n): ", on_interrupt="n") or "n").lower() == 'y'
             
             if show_full:
                 print("[*] Full disassembly (main function if available):")
@@ -134,13 +143,13 @@ class ReverseEngineeringTools:
         except Exception as e:
             print(f"[!] Error during disassembly: {e}")
         
-        input("\nPress Enter to continue...")
+        prompt_user("\nPress Enter to continue...", on_interrupt="")
     
     def hex_viewer(self):
         """Simple hex viewer"""
         print("[+] Hex Viewer")
         
-        file_path = input("Enter path to file: ")
+        file_path = prompt_user("Enter path to file: ", on_interrupt="")
         if not file_path or not os.path.exists(file_path):
             print("[!] Invalid file path or file does not exist.")
             return
@@ -169,20 +178,20 @@ class ReverseEngineeringTools:
                 
                 # Add paging for large files
                 if offset % 256 == 0 and offset < len(content):
-                    choice = input("\nContinue viewing? (y/n): ").lower()
+                    choice = (prompt_user("\nContinue viewing? (y/n): ", on_interrupt="n") or "n").lower()
                     if choice != 'y':
                         break
                         
         except Exception as e:
             print(f"[!] Error viewing file: {e}")
         
-        input("\nPress Enter to continue...")
+        prompt_user("\nPress Enter to continue...", on_interrupt="")
     
     def executable_packer_detector(self):
         """Detect if an executable is packed"""
         print("[+] Executable Packer Detector")
         
-        binary_path = input("Enter path to executable: ")
+        binary_path = prompt_user("Enter path to executable: ", on_interrupt="")
         if not binary_path or not os.path.exists(binary_path):
             print("[!] Invalid file path or file does not exist.")
             return
@@ -247,7 +256,7 @@ class ReverseEngineeringTools:
         except Exception as e:
             print(f"[!] Error analyzing file: {e}")
         
-        input("\nPress Enter to continue...")
+        prompt_user("\nPress Enter to continue...", on_interrupt="")
 
 def run_reverse_engineering_tools():
     """Run the reverse engineering tools"""
@@ -272,7 +281,9 @@ def reverse_engineering_menu():
     5. Back to Main Menu
     """)
         
-        choice = input("Select an option: ")
+        choice = prompt_user("Select an option: ", on_interrupt="5")
+        if choice is None:
+            return
         
         try:
             choice = int(choice)
@@ -288,10 +299,10 @@ def reverse_engineering_menu():
                 return
             else:
                 print("Invalid option. Please try again.")
-                input("\nPress Enter to continue...")
+                prompt_user("\nPress Enter to continue...", on_interrupt="")
         except ValueError:
             print("Please enter a number.")
-            input("\nPress Enter to continue...")
+            prompt_user("\nPress Enter to continue...", on_interrupt="")
 
 # For standalone testing
 if __name__ == "__main__":

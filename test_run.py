@@ -1,47 +1,53 @@
 #!/usr/bin/env python
-# Test run script for specific functions in Pegasus-Suite
+"""Smoke tests for selected Pegasus-Suite entry points.
 
+This file is intentionally import-safe for pytest collection.
+"""
+
+import importlib
 import importlib.util
+from unittest.mock import patch
 
-# Try to import the module with either name variant
-try:
-    # Try with underscore
-    spec = importlib.util.find_spec('Pegasus_Suite')
-    if spec:
-        pegasus_suite = importlib.import_module('Pegasus_Suite')
-    else:
-        # Try with hyphen
-        spec = importlib.util.find_spec('Pegasus-Suite')
+
+def load_module():
+    """Try to import the suite under supported module names."""
+    for module_name in ("Pegasus_Suite", "Pegasus-Suite"):
+        spec = importlib.util.find_spec(module_name)
         if spec:
-            pegasus_suite = importlib.import_module('Pegasus-Suite')
-        else:
-            print("Cannot find Pegasus-Suite module")
-            import sys
-            sys.exit(1)
-except ImportError:
-    print("Error importing Pegasus-Suite")
-    import sys
-    sys.exit(1)
+            return importlib.import_module(module_name)
+    raise ImportError("Cannot find Pegasus-Suite module")
 
-# Function to run a specific function from the module
-def run_function(func_name):
-    if hasattr(pegasus_suite, func_name):
-        func = getattr(pegasus_suite, func_name)
-        print(f"Running {func_name}...")
+
+pegasus_suite = load_module()
+
+
+def run_function(func_name, mocked_inputs=None):
+    """Run one callable from Pegasus-Suite with optional mocked input values."""
+    if not hasattr(pegasus_suite, func_name):
+        return False
+
+    func = getattr(pegasus_suite, func_name)
+    if mocked_inputs is None:
+        mocked_inputs = []
+
+    with patch("builtins.input", side_effect=mocked_inputs):
         func()
-    else:
-        print(f"Function {func_name} not found in Pegasus-Suite module")
+    return True
 
-# Run reverse engineering menu
-print("Testing Reverse Engineering menu...")
-run_function('reverse_engineering_menu')
 
-# Run password strength analyzer
-print("\nTesting Password Strength Analyzer...")
-run_function('password_strength_analyzer')
+def test_reverse_engineering_menu_exit():
+    """Reverse engineering menu should return immediately when selecting Back."""
+    assert run_function("reverse_engineering_menu", ["5"])
 
-# Test Facebook function
-print("\nTesting FB function...")
-run_function('fb')
 
-print("All function tests completed successfully") 
+if __name__ == "__main__":
+    print("Testing Reverse Engineering menu...")
+    run_function("reverse_engineering_menu", ["5"])
+
+    print("\nTesting Password Strength Analyzer...")
+    run_function("password_strength_analyzer", ["Password123!"])
+
+    print("\nTesting FB function...")
+    run_function("fb", ["q"])
+
+    print("All function tests completed successfully")
